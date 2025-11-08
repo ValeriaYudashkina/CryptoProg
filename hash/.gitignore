@@ -1,0 +1,4 @@
+hash_program
+*.o
+*.gch
+test.txt
