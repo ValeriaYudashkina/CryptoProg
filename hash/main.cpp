@@ -21,8 +21,10 @@ int main(int argc, char* argv[]) {
                   new HashFilter(hash,
                                new HexEncoder(
                                new StringSink(digest))));
-        cout << "Файл: " << filename << endl;
-        cout << "SHA-256: " << digest << endl;
+        cout << digest << endl;
+    } catch(const Exception& e) {
+        cerr << "Ошибка Crypto++: " << e.what() << endl;
+        return 1;
     } catch(const exception& e) {
         cerr << "Ошибка: " << e.what() << endl;
         return 1;
