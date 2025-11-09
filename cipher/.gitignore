@@ -1,0 +1,8 @@
+encrypt
+decrypt
+*.o
+*.hex
+encrypted.bin
+decrypted.txt
+original.txt
+*.gch
