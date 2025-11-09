@@ -5,6 +5,8 @@ CXXFLAGS = -Wall -std=c++11
 TARGET = hash_program
 SRC = main.cpp
 
+LIBS = -lcrypto++ -lpthread
+
 all: $(TARGET)
 
 $(TARGET): $(SRC)
