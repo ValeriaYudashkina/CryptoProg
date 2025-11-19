@@ -2,15 +2,21 @@
 
 CXX = g++
 CXXFLAGS = -Wall -std=c++11
-LIBS = -lcrypto++ -lpthread
+LDFLAGS = -lcrypto++
 
 all: encrypt decrypt
 
 encrypt: encrypt.cpp
-	$(CXX) $(CXXFLAGS) -o encrypt encrypt.cpp $(LIBS)
+	$(CXX) $(CXXFLAGS) $< $(LDFLAGS) -o $@
 
 decrypt: decrypt.cpp
-	$(CXX) $(CXXFLAGS) -o decrypt decrypt.cpp $(LIBS)
+	$(CXX) $(CXXFLAGS) $< $(LDFLAGS) -o $@
 
 clean:
 	rm -f encrypt decrypt *.hex encrypted.bin decrypted.txt original.txt
+
+test:
+	echo "This is a test file for encrypting/decrypting program" > original.txt
+	./encrypt
+	./decrypt
+	diff original.txt decrypted.txt && echo "SUCCESS" || echo "FAIL"
