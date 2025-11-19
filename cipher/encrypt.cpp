@@ -5,37 +5,44 @@
 #include <cryptopp/osrng.h>
 #include <cryptopp/hex.h>
 #include <cryptopp/files.h>
+#include <cryptopp/sha.h>
 using namespace std;
 using namespace CryptoPP;
 
 int main() {
+    string input_file, output_file, password, iv_file;
+    cout << "Входной файл: ";
+    cin >> input_file;
+    cout << "Выходной файл: ";
+    cin >> output_file;
+    cout << "Пароль: ";
+    cin >> password;
+    cout << "Файл для IV: ";
+    cin >> iv_file;
+
     try {
         AutoSeededRandomPool rng;
-        byte key[AES::DEFAULT_KEYLENGTH];
-        rng.GenerateBlock(key, sizeof(key));
-
         byte iv[AES::BLOCKSIZE];
         rng.GenerateBlock(iv, sizeof(iv));
-        cout << "Сгенерирован ключ и IV" << endl;
 
-        string key_hex, iv_hex;
-        StringSource(key, sizeof(key), true,
-            new HexEncoder(
-                new StringSink(key_hex)));
+        string iv_hex;
         StringSource(iv, sizeof(iv), true,
             new HexEncoder(
                 new StringSink(iv_hex)));
-        StringSource(key_hex, true, new FileSink("key.hex"));
-        StringSource(iv_hex, true, new FileSink("iv.hex"));
-        cout << "Ключ был сохранен в key.hex" << endl;
-        cout << "IV был сохранен в iv.hex" << endl;
+        StringSource(iv_hex, true, new FileSink(iv_file.c_str()));
+        cout << "IV был сохранен в: " << iv_file << endl;
+
+        byte key[AES::DEFAULT_KEYLENGTH];
+        SHA256 hash;
+        hash.CalculateDigest(key, (byte*)password.data(), password.size());
+        cout << "Ключ был выработан из пароля" << endl;
 
         CBC_Mode<AES>::Encryption encryptor;
         encryptor.SetKeyWithIV(key, sizeof(key), iv);
-        FileSource("original.txt", true,
+        FileSource(input_file.c_str(), true,
             new StreamTransformationFilter(encryptor,
-                new FileSink("encrypted.bin")));
-        cout << "Файл original.txt был зашифрован в encrypted.bin" << endl;
+                new FileSink(output_file.c_str())));
+        cout << "Файл " << input_file << " был зашифрован в " << output_file << endl;
     } catch(const Exception& e) {
         cerr << "Ошибка: " << e.what() << endl;
         return 1;

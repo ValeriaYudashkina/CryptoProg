@@ -4,32 +4,42 @@
 #include <cryptopp/modes.h>
 #include <cryptopp/hex.h>
 #include <cryptopp/files.h>
+#include <cryptopp/sha.h>
 using namespace std;
 using namespace CryptoPP;
 
 int main() {
-    try {
-        string key_hex, iv_hex;
-        FileSource("key.hex", true, new StringSink(key_hex));
-        FileSource("iv.hex", true, new StringSink(iv_hex));
-        cout << "Были прочитаны key.hex и iv.hex" << endl;
+    string input_file, output_file, password, iv_file;
+    cout << "Входной файл: ";
+    cin >> input_file;
+    cout << "Выходной файл: ";
+    cin >> output_file;
+    cout << "Пароль: ";
+    cin >> password;
+    cout << "Файл с IV: ";
+    cin >> iv_file;
 
-        byte key[AES::DEFAULT_KEYLENGTH];
-        StringSource(key_hex, true,
-            new HexDecoder(
-                new ArraySink(key, sizeof(key))));
+    try {
+        string iv_hex;
+        FileSource(iv_file.c_str(), true, new StringSink(iv_hex));
+
         byte iv[AES::BLOCKSIZE];
         StringSource(iv_hex, true,
             new HexDecoder(
                 new ArraySink(iv, sizeof(iv))));
-        cout << "Ключ и IV были преобразованы из hex" << endl;
+        cout << "IV был прочитан из " << iv_file << endl;
+
+        byte key[AES::DEFAULT_KEYLENGTH];
+        SHA256 hash;
+        hash.CalculateDigest(key, (byte*)password.data(), password.size());
+        cout << "Ключ был выработан из пароля" << endl;
 
         CBC_Mode<AES>::Decryption decryptor;
         decryptor.SetKeyWithIV(key, sizeof(key), iv);
-        FileSource("encrypted.bin", true,
+        FileSource(input_file.c_str(), true,
             new StreamTransformationFilter(decryptor,
-                new FileSink("decrypted.txt")));
-        cout << "Файл encrypted.bin был расшифрован в decrypted.txt" << endl;
+                new FileSink(output_file.c_str())));
+        cout << "Файл " << input_file << " был расшифрован в " << output_file << endl;
     } catch(const Exception& e) {
         cerr << "Ошибка: " << e.what() << endl;
         return 1;
